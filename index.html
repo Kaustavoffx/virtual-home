@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Interactive Room - Visual Controls</title>
+    <style>
+        /* --- CORE SETUP --- */
+        body { margin: 0; overflow: hidden; background-color: #1a1a1a; font-family: 'Segoe UI', sans-serif; }
+        
+        /* --- NEW VISUAL UI CONTAINER --- */
+        #ui {
+            position: absolute;
+            top: 10px; width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none; /* Let clicks pass through to 3D scene */
+            z-index: 10;
+            color: #fff;
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 22px; letter-spacing: 2px; text-shadow: 0px 2px 4px rgba(0,0,0,0.8); }
+
+        /* --- CONTROL BLOCKS LAYOUT --- */
+        #controls-container {
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .label { font-size: 12px; margin-top: 8px; opacity: 0.8; }
+        .accent { color: #00ff88; font-weight: bold; }
+
+        /* --- VISUALS: ARROW KEYS --- */
+        .keys-visual {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        .key {
+            width: 20px; height: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #00ff88;
+            border-radius: 4px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 10px; color: #00ff88;
+        }
+        .key-up { grid-column: 2; }
+        .key-left { grid-column: 1; grid-row: 2; }
+        .key-down { grid-column: 2; grid-row: 2; }
+        .key-right { grid-column: 3; grid-row: 2; }
+
+        /* --- VISUALS: MOUSE --- */
+        .mouse-visual {
+            width: 24px; height: 38px;
+            border: 2px solid #00ff88;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        /* Scroll Animation */
+        .wheel {
+            width: 4px; height: 8px;
+            background: #00ff88;
+            border-radius: 2px;
+            position: absolute;
+            top: 6px; left: 50%;
+            transform: translateX(-50%);
+            animation: scrollMove 1.5s infinite;
+        }
+        @keyframes scrollMove {
+            0% { top: 6px; opacity: 1; }
+            100% { top: 14px; opacity: 0; }
+        }
+
+        /* Drag Visual */
+        .drag-cursor { font-size: 24px; line-height: 38px; }
+
+        /* --- RESET BUTTON --- */
+        #resetBtn {
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            padding: 8px 20px;
+            font-size: 13px;
+            border-radius: 20px;
+            margin-top: 15px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        #resetBtn:hover { background: rgba(0, 255, 136, 0.4); color: #fff; }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="ui">
+        <h1>VIRTUAL ROOM</h1>
+        <div id="controls-container">
+            <div class="control-block">
+                <div class="keys-visual">
+                    <div class="key key-up">↑</div>
+                    <div class="key key-left">←</div>
+                    <div class="key key-down">↓</div>
+                    <div class="key key-right">→</div>
+                </div>
+                <div class="label"><span class="accent">MOVE</span> CUBE</div>
+            </div>
+
+            <div class="control-block">
+                <div class="mouse-visual">
+                    <div class="wheel"></div>
+                </div>
+                <div class="label"><span class="accent">SCROLL</span> ZOOM</div>
+            </div>
+
+            <div class="control-block">
+                 <div class="drag-cursor">🖱️↔️</div>
+                <div class="label"><span class="accent">DRAG</span> ROTATE</div>
+            </div>
+        </div>
+        <button id="resetBtn">Reset View (Spacebar)</button>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. SETUP
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1a1a);
+        scene.fog = new THREE.Fog(0x1a1a1a, 10, 50);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const defaultCamPos = { x: 0, y: 8, z: 15 };
+        camera.position.set(defaultCamPos.x, defaultCamPos.y, defaultCamPos.z);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        // 2. CONTROLS
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.1;
+        controls.minDistance = 5; controls.maxDistance = 40;
+
+        // 3. RESET
+        function resetView() {
+            camera.position.set(defaultCamPos.x, defaultCamPos.y, defaultCamPos.z);
+            controls.target.set(0, 0, 0); controls.update();
+        }
+        document.getElementById('resetBtn').addEventListener('click', resetView);
+        window.addEventListener('keydown', (e) => { if (e.code === 'Space') resetView(); });
+
+        // 4. LIGHTS & ROOM
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6); scene.add(ambientLight);
+        const spotLight = new THREE.SpotLight(0xffffff, 1.5);
+        spotLight.position.set(10, 20, 10); spotLight.castShadow = true; scene.add(spotLight);
+
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.1 }));
+        floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+        const grid = new THREE.GridHelper(30, 30, 0x00ff88, 0x222222); grid.position.y = 0.01; scene.add(grid);
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.8 });
+        const backWall = new THREE.Mesh(new THREE.PlaneGeometry(30, 15), wallMat);
+        backWall.position.set(0, 7.5, -15); backWall.receiveShadow = true; scene.add(backWall);
+
+        // 5. CUBE
+        const textureLoader = new THREE.TextureLoader();
+        const loadTex = (path) => { const tex = textureLoader.load(path); tex.colorSpace = THREE.SRGBColorSpace; return tex; }
+        // IMPORTANT: Ensure 'assets' folder exists with images 1.png through 6.png
+        const cubeMaterials = [
+            new THREE.MeshStandardMaterial({ map: loadTex('assets/1.png') }), new THREE.MeshStandardMaterial({ map: loadTex('assets/2.png') }),
+            new THREE.MeshStandardMaterial({ map: loadTex('assets/3.png') }), new THREE.MeshStandardMaterial({ map: loadTex('assets/4.png') }),
+            new THREE.MeshStandardMaterial({ map: loadTex('assets/5.png') }), new THREE.MeshStandardMaterial({ map: loadTex('assets/6.png') })
+        ];
+        const cube = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), cubeMaterials);
+        cube.position.y = 1; cube.castShadow = true; scene.add(cube);
+
+        // 6. INTERACTION Loop
+        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2(); let isHovered = false;
+        window.addEventListener('mousemove', (event) => {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+        });
+        const keys = {}; const speed = 0.3;
+        window.addEventListener('keydown', (e) => {
+            if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) e.preventDefault();
+            keys[e.code] = true;
+        });
+        window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+        function animate() {
+            requestAnimationFrame(animate); controls.update();
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObject(cube);
+            if (intersects.length > 0) {
+                if (!isHovered) { document.body.style.cursor = 'pointer'; cube.scale.set(1.2, 1.2, 1.2); isHovered = true; }
+                cube.rotation.y += 0.05; cube.rotation.x += 0.05;
+            } else {
+                if (isHovered) { document.body.style.cursor = 'default'; cube.scale.set(1, 1, 1); isHovered = false; }
+                cube.rotation.y += 0.005;
+            }
+            if (keys['ArrowUp']) cube.position.z -= speed; if (keys['ArrowDown']) cube.position.z += speed;
+            if (keys['ArrowLeft']) cube.position.x -= speed; if (keys['ArrowRight']) cube.position.x += speed;
+            cube.position.x = Math.max(-13, Math.min(13, cube.position.x));
+            cube.position.z = Math.max(-13, Math.min(13, cube.position.z));
+            renderer.render(scene, camera);
+        }
+        animate();
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
