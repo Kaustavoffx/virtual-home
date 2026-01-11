@@ -2,7 +2,7 @@
 
 A spatial 3D web application built with **Three.js** for the **MLH Global Hack Week: Beginners** challenge. This project creates an interactive virtual environment where users can navigate a 3D space, manipulate objects, and explore spatial web technologies.
 
-🔗 **[Play the Live Demo Here]([YOUR_GITHUB_PAGES_LINK_HERE])**
+🔗 **[Play the Live Demo Here](https://kaustavoffx.github.io/virtual-room/)**
 
 ![Three.js](https://img.shields.io/badge/Three.js-black?style=for-the-badge&logo=three.js&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -23,7 +23,7 @@ This project goes beyond a simple cube by implementing advanced Three.js mechani
     * **Orbit Controls:** Click and drag to rotate the camera around the room.
     * **Zoom Constraints:** Camera allows zooming but prevents clipping through the floor or getting lost in the void.
     * **Keyboard Navigation:** Smooth character movement using arrow keys with boundary collision detection.
-* **Visual UI Overlay:** A custom HUD (Heads-Up Display) that visualizes controls for better user experience.
+    * **Visual UI Overlay:** A custom HUD (Heads-Up Display) that visualizes controls for better user experience.
 
 ---
 
@@ -44,11 +44,12 @@ This project goes beyond a simple cube by implementing advanced Three.js mechani
 Because this project uses **ES Modules** and **Texture Loading**, standard browser security (CORS) will block it if you just double-click `index.html`. You need a local server.
 
 ### Option 1: VS Code (Recommended)
-1.  Install the **[Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)** extension.
-2.  Right-click `index.html`.
-3.  Select **"Open with Live Server"**.
+1. Install the **[Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)** extension.
+2. Right-click `index.html`.
+3. Select **"Open with Live Server"**.
 
 ### Option 2: Python
 If you have Python installed, run this command in the project folder:
+
 ```bash
 python -m http.server 8000
