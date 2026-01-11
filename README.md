@@ -2,7 +2,7 @@
 
 A spatial 3D web application built with **Three.js** for the **MLH Global Hack Week: Beginners** challenge. This project creates an interactive virtual environment where users can navigate a 3D space, manipulate objects, and explore spatial web technologies.
 
-🔗 **[Play the Live Demo Here](https://kaustavoffx.github.io/virtual-room/)**
+🔗 **[Play the Live Demo Here](https://kaustavoffx.github.io/virtual-home/)**
 
 ![Three.js](https://img.shields.io/badge/Three.js-black?style=for-the-badge&logo=three.js&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
@@ -53,3 +53,4 @@ If you have Python installed, run this command in the project folder:
 
 ```bash
 python -m http.server 8000
+
